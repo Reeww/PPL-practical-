@@ -1,0 +1,150 @@
+Neo4j Assignment No. 2
+
+Question No.1||Product Database
+
+Model the following Import Export information as a graph model, and answer the following queries using Cypher.
+There are countries which import and export products to each other. Products are produced across different states in a country. 
+Production of the products is measured in %. A product can be exported if its production exceeds 60%. 
+A product needs to be imported if its consumption percentage is more than its production percentage in a country.
+
+1.	Identify the labels and relationships, along with their properties, and draw Graph model.
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model. 
+3.	Answer the following Queries
+a.	List the countries that export oil. 
+b.	List the products produced in “Maharashtra”.
+c.	List the countries that produce more than 70% sugarcane. 
+d.	List the countries that do not import any product.
+
+create(ind:Country{name:'INDIA'}) 
+create(fra:Country{name:'FRANCE'}) 
+create(jap:Country{name:'JAPAN'}) 
+create(ame:Country{name:'AMERICA'})
+
+create(mah:State{name:'Maharashtra'}) 
+create(alsace:State{name:'Alsace'}) 
+create(alabama:State{name:'Alabama'}) 
+create(kanto:State{name:'Kanto'})
+
+create(oil:Product{name:'OIL'}) 
+create(petrol:Product{name:'PETROL'}) 
+create(sugarcane:Product{name:'SUGARCANE'})
+
+create(mah)-[:belongs_to]->(ind) 
+create(alsace)-[:belongs_to]->(fra) 
+create(alabama)-[:belongs_to]->(ame) 
+create(kanto)-[:belongs_to]->(jap)
+
+create(oil)-[:produced_by{percent:80}]->(mah) 
+create(petrol)-[:produced_by{percent:10}]->(mah) 
+create(sugarcane)-[:produced_by{percent:98}]->(mah) 
+create(oil)-[:produced_by{percent:70}]->(alsace)
+create(petrol)-[:produced_by{percent:30}]->(alsace)
+create(sugarcane)-[:produced_by{percent:15}]->(alsace) 
+create(oil)-[:produced_by{percent:80}]->(alabama)  
+create(petrol)-[:produced_by{percent:70}]->(alabama)  
+create(sugarcane)-[:produced_by{percent:85}]->(alabama)  
+create(petrol)-[:produced_by{percent:40}]->(kanto)
+create(oil)-[:produced_by{percent:97}]->(kanto)
+
+create(ind)-[:import]->(oil)
+create(ind)-[:import]->(petrol) 
+create(fra)-[:import]->(sugarcane)
+create(fra)-[:import]->(petrol)
+create(jap)-[:import]->(sugarcane) 
+create(jap)-[:import]->(petrol)
+
+create(ind)-[:export]->(sugarcane)
+create(fra)-[:export]->(oil)
+create(ame)-[:export]->(oil)
+create(ame)-[:export]->(petrol)
+create(jap)-[:export]->(oil) 
+
+
+Solution for the queries
+
+a. List the countries that export oil.
+match(c:Country)-[:export]->(p:Product{name:'OIL'}) 
+return c.name
+
+b. List the products produced in “Maharashtra”.
+match(p:Product)-[:produced_by]->(s:State{name:'Maharashtra'}) 
+return p.name as Name_of_product
+
+c. List the countries that produce more than 70% sugarcane. 
+match(p:Product{name:'SUGARCANE'})-[pr:produced_by]->(s:State)-[:belongs_to]->(c:Country) 
+where pr.percent>70 
+return distinct c.name
+
+d. List the countries that do not import any product.
+match(c:Country) 
+where not (c:Country)-[:import]->() 
+return c.name
+
+
+Question 2||Furniture Showroom Database
+
+Model the following Furniture Showroom information as a graph model, and answer the queries using Cypher. 
+Consider a furniture showroom with different types of furniture like sofas sets, tea tables, cupboards, beds, dining tables, etc. 
+Showroom is divided into different sections, one section for each furniture type, each section is handled by a sales staff. 
+A sales staff can handle one or more sections. Customer may enquire about furniture. 
+An enquiry may result in a purchase by the customer.
+1.	Identify the labels and relationships, along with their properties, & draw a Graph model. 
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model. 
+3.	Answer the queries.
+a.	List the types of furniture’s available in the showroom. 
+b.	List the sections handled by Mr. Satish. 
+c.	List the names of customers who have done only enquiry but not made any purchase. 
+d.	List the fast-moving furniture types. 
+
+create(chair:Furniture{name:'Chair',type:'fast-moving'}) 
+create(sofa:Furniture{name:'Sofa sets',type:'slow-moving'}) 
+create(ttable:Furniture{name:'Tea Tables',type:'fast-moving'}) 
+create(cupboards:Furniture{name:'Cupboards',type:'slow-moving'}) 
+create(beds:Furniture{name:'Beds',type:'slow-moving'})
+create(dtable:Furniture{name:'Dining Tables',type:'medium-moving'}) 
+ 
+create(satish:SalesStaff{name:'Mr Satish'}) 
+create(raju:SalesStaff{name:'Mr Raju'})
+
+create(fmf:Section{name:'Fast Moving Furniture'}) 
+create(smf:Section{name:'Slow Moving Furniture'}) 
+create(mmf:Section{name:'Medium Moving Furniture'}) 
+
+create(fmf)-[:handled_by]->(satish) 
+create(mmf)-[:handled_by]->(satish) 
+create(smf)-[:handled_by]->(raju) 
+
+create(ram:Customer{name:'Ram'}) 
+create(sham:Customer{name:'Sham'}) 
+create(raj:Customer{name:'Raj'}) 
+create(ravi:Customer{name:'Ravi'})
+
+create(ram)-[:done_enquiry]->(chair) 
+create(ram)-[:done_enquiry]->(ttable)
+create(sham)-[:done_enquiry]->(sofa) 
+create(ravi)-[:done_enquiry]->(ttable) 
+create(raj)-[:done_enquiry]->(dtable)
+
+create(ram)-[:purchased]->(chair)
+create(ram)-[:purchased]->(ttable) 
+create(ravi)-[:purchased]->(ttable) 
+create(raj)-[:purchased]->(dtable) 
+
+Solution for the queries
+
+a. List the types of furniture’s available in the showroom.
+match(f:Furniture) return f.name as Furniture_Name,f.type as Furniture_Type 
+
+b. List the sections handled by Mr. Satish.
+match(s:Section)-[:handled_by]->(st:SalesStaff{name:'Mr Satish'}) 
+return s.name as Sections_Handled_By_Mr_Satish
+
+c. List the names of customers who have done only enquiry but not made any purchase.
+match(c:Customer)-[:done_enquiry]->(f:Furniture) 
+where not (c:Customer)-[:purchased]->() 
+return c.name as Customer_done_only_enquiry
+
+d. List the fast-moving furniture types.
+match(f:Furniture{type:'fast-moving'}) 
+return f.name as Fast_moving_furnitures
+

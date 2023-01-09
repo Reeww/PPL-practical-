@@ -1,0 +1,171 @@
+Neo4j Assignment No.1 
+
+Question 1||Person Database
+
+Model the following Society relations among people working in “HCL”, as a graph model, and answer the queries using Cypher. 
+A person can be a friend of another person. A person may have siblings (brothers / sisters), 
+A person may be a parent(mother/father) of another person. A person stays either in Pune or Mumbai or Kolhapur. 
+A person may be working on either ‘Finance’ or ‘Inventory’ or ‘Sales’ projects.
+1.	Identify the labels and relationships, along with their properties, and draw a high-level Graph model. 
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model. 
+3.	Answer the following Queries in Cypher:
+a.	List the names of people who are parents. 
+b.	List the names of people working on ‘Finance ‘project 
+c.	List the names of people staying in ‘Pune’ and ‘Mumbai’. 
+d.	List the names of people who are mothers. 
+
+CREATE(amit:Person{name:'Amit',city:'Pune'}) 
+CREATE(jaggu:Person{name:'Jaggu',city:'Mumbai'}) 
+CREATE(jagan:Person{name:'Jagan',city:'Kolhapur'}) 
+CREATE(vaishnavi:Person{name:'Vaishnavi',city:'Pune'}) 
+CREATE(vaibhavi:Person{name:'Vaibhavi',city:'Mumbai'}) 
+CREATE(radha:Person{name:'Radha',city:'Kolhapur'})
+
+CREATE(ajit:Parents:Person{name:'Ajit',city:'Pune'}) 
+CREATE(ajay:Parents:Person{name:'Ajay',city:'Mumbai'}) 
+CREATE(shweta:Parents:Person{name:'Shweta',city:'Kolhapur'}) 
+CREATE(anjali:Parents:Person{name:'Anjali',city:'Pune'})
+
+CREATE(finance:Project{Title:'Finance'}) 
+CREATE(inventory:Project{Title:'Inventory'}) 
+CREATE(sales:Project{Title:'Sales'})
+
+CREATE(amit)-[:friend_of]->(jaggu) 
+CREATE(amit)-[:friend_of]->(jagan) 
+CREATE(ajay)-[:friend_of]->(ajit) 
+CREATE(vaishnavi)-[:friend_of]->(radha) 
+CREATE(radha)-[:friend_of]->(vaibhavi)
+
+CREATE (amit)-[:brother_of]->(radha) 
+CREATE (vaibhavi)-[:sister_of]->(jaggu)
+ 
+CREATE (ajit)-[:father_of]->(amit) 
+CREATE (ajay)-[:father_of]->(jagan) 
+CREATE (shweta)-[:mother_of]->(amit) 
+CREATE (anjali)-[:mother_of]->(jaggu)
+
+CREATE (ajit)-[:working_in]->(finance) 
+CREATE (shweta)-[:working_in]->(finance)
+CREATE (jaggu)-[:working_in]->(inventory) 
+CREATE (vaibhavi)-[:working_in]->(inventory) 
+CREATE (jagan)-[:working_in]->(inventory)
+CREATE (amit)-[:working_in]->(sales) 
+CREATE (radha)-[:working_in]->(sales) 
+CREATE (vaishnavi)-[:working_in]->(sales)
+
+
+Solution for the queries
+
+a. List The names of People Who Are parents:person
+match (p:Parents:Person) 
+return p.name AS parents
+
+b. List The names of People Working on Finance project 
+match(p:Person)-[:working_in]->(:Project{Title:'Finance'}) 
+return p.name AS Finance_Employee
+
+c. List The names of People Staying in 'pune' and 'Mumbai'
+match(p:Person) where p.city IN ['Mumbai','Pune'] 
+return p.name AS People_staying_in_Pune_Mumbai
+
+d. List The names of People Who Are Mother
+match(m:Person)-[:mother_of]->(Person) 
+return m.name AS Mother_name
+
+
+
+
+Question No.2||Dairy Database
+
+Model the following Dairy Brand information as a graph model, and answer the following queries using Cypher. 
+There are various dairy brands like Amul, Go, Britannia, Gokul etc. Their popularity varies across different states in India. 
+The popularity is measured as %, with a high popularity defined as >=90%, Medium Popularity between 50 to 90%, and Low popularity <50%. 
+Each brand manufactures various types of Dairy products like milk, butter, cheese, curd etc. 
+The milk product can be categorized into low fat/medium fat or high fat content type.
+
+1.	Identify the labels and relationships, along with their properties, and draw a high-level Graph model. 
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model. 
+3.	Answer the following queries using Cypher:
+a.	List the names of different brands considered in your graph. 
+b.	List the brands that are highly popular in Maharashtra. 
+c.	List the popular cheese brands in Gujarat. 
+d.	List the brands manufacturing “low” fat content milk. 
+
+create(amul:Brand{name:'Amul',product:['Milk','Butter','Cheese','Curd']})
+create(go:Brand{name:'Go',product:['Milk','Butter','Cheese']}) 
+create(brita:Brand{name:'Britannia',product:['Milk','Curd']}) 
+create(gokul:Brand{name:'Gokul',product:['Milk','Butter','Cheese','Curd']})
+
+create(milk:Product{ptype:'Milk'}) 
+create(butter:Product{ptype:'Butter'}) 
+create(cheese:Product{ptype:'Cheese'})
+create(curd:Product{ptype:'Curd'})
+
+create(mah:State{name:'Maharashtra'}) 
+create(gujarat:State{name:'Gujarat'}) 
+create(karna:State{name:'Karnataka'}) 
+create(punjab:State{name:'Punjab'})
+
+create(amul)-[:manufactures {type:'Low Fat'}]->(milk)
+create(amul)-[:manufactures]->(butter)
+create(amul)-[:manufactures]->(cheese)
+create(amul)-[:manufactures]->(curd)
+
+create(go)-[:manufactures {type:'Medium Fat'}]->(milk)
+create(go)-[:manufactures]->(butter)
+create(go)-[:manufactures]->(cheese)
+
+create(brita)-[:manufactures {type:'Low Fat'}]->(milk)
+create(brita)-[:manufactures]->(curd)
+
+create(gokul)-[:manufactures {type:'High Fat'}]->(milk)
+create(gokul)-[:manufactures]->(butter)
+create(gokul)-[:manufactures]->(cheese)
+create(gokul)-[:manufactures]->(curd)
+
+create(amul)-[:popular_in{percent:95}]->(mah) 
+create(go)-[:popular_in{percent:70}]->(mah) 
+create(brita)-[:popular_in{percent:80}]->(mah) 
+create(gokul)-[:popular_in{percent:95}]->(mah)
+
+create(amul)-[:popular_in{percent:98}]->(gujarat) 
+create(go)-[:popular_in{percent:90}]->(gujarat) 
+create(brita)-[:popular_in{percent:50}]->(gujarat) 
+create(gokul)-[:popular_in{percent:40}]->(gujarat)
+
+create(amul)-[:popular_in{percent:80}]->(punjab) 
+create(brita)-[:popular_in{percent:60}]->(punjab) 
+
+create(go)-[:popular_in{percent:80}]->(karna) 
+create(amul)-[:popular_in{percent:80}]->(karna)
+
+create(cheese)-[:popular_in{Brand:'Amul', percent:90}]->(gujarat) 
+create(cheese)-[:popular_in{Brand:'Go', percent:80}]->(gujarat) 
+create(cheese)-[:popular_in{Brand:'Gokul', percent:70}]->(gujarat)
+
+create(cheese)-[:popular_in{Brand:'Amul',percent:70}]->(mah) 
+create(curd)-[:popular_in{Brand:'Britania',percent:80}]->(punjab) 
+create(butter)-[:popular_in{Brand:'Go',percent:90}]->(karna)
+
+Solution for the Queries
+
+a. List the names of different brands considered in your graph.
+match(b:Brand) 
+return b.name as Brands
+
+b. List the brands that are highly popular in Maharashtra.
+match(b:Brand)-[p:popular_in]->(s:State{name:'Maharashtra'}) 
+where p.percent>=90 
+return b.name as popular_brands_in_maharashtra
+
+c. List the popular cheese brands in Gujarat.
+match(pr:Product{ptype:'Cheese'})-[p:popular_in]->(s:State{name:'Gujarat'}) 
+return p.Brand,p.percent 
+order by p.percent desc limit 1
+
+d. List the brands manufacturing “low” fat content milk.
+match(b:Brand)-[:manufactures{type:'Low Fat'}]->(p:Product {ptype:'Milk'})
+return b.name
+
+
+

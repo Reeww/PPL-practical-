@@ -1,0 +1,136 @@
+Neo4j Assignment 3:
+
+Question 1|| Mall database
+
+Model the following Clothing Brand information as a graph model, and answer the following queries using Cypher.
+Consider a Mall for clothing. This mall will include different sections for males, females and kids. 
+Each section contains different types of apparels from different brands. There are many apparels with different designs, of each type. 
+An apparel may be available in one or more standard sizes (S/M/L/XL/XXL). Sales staff is assigned for each section.
+1.	Identify the labels and relationships, along with their properties, and draw Graph model. 
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model. 
+3.	Answer the queries
+a.	List the different apparels type in female section. 
+b.	List the names of sales staff in ‘kids’ section. 
+c.	List the standard sizes available for shirts in male section. 
+d.	List the brand having least number of apparels under it. 
+
+
+create(kids:Section {name:'KIDS',sales_staff: ['ajay','ram','ramesh']})
+create(male:Section {name:'MALE',sales_staff: ['vijay','raghav','vinit']})
+create(female:Section {name:'FEMALE',sales_staff: ['punam','vaishnavi','muskan']})
+
+create(dress:Apparels{name:'Dress'})
+create(frock:Apparels{name:'Frock'})
+create(shirt:Apparels{name:'Shirt'})
+create(jeans:Apparels{name:'Jeans'})
+create(kurti:Apparels{name:'Kurti'})
+create(legging:Apparels{name:'Legging'})
+
+create(nike:Brand{name:'NIKE'}) 
+create(adidas:Brand{name:'ADIDAS'}) 
+
+create(kids)-[:contains {size:['M','S']}]->(dress) 
+create(kids)-[:contains {size:['M','S']}]->(frock) 
+create(male)-[:contains {size:['L','XL','XXL']}]->(shirt) 
+create(male)-[:contains {size:['L','XL','XXL']}]->(jeans) 
+create(female)-[:contains {size:['L','XL','XXL']}]->(kurti)
+create(female)-[:contains {size:['L','XL','XXL']}]->(legging)
+create(female)-[:contains {size:['L','XL']}]->(shirt) 
+create(female)-[:contains {size:['L','XL']}]->(jeans) 
+
+create(shirt)-[:provided_by]->(adidas) 
+create(jeans)-[:provided_by]->(adidas) 
+create(dress)-[:provided_by]->(nike) 
+create(frock)-[:provided_by]->(nike) 
+create(kurti)-[:provided_by]->(nike)
+create(legging)-[:provided_by]->(nike)
+ 
+Solution for the queries
+
+a. List the different apparels type in female section.
+match(s:Section{name:'FEMALE'})-[:contains]->(a:Apparels) 
+return a.name
+
+b. List the names of sales staff in ‘kids’ section
+match(s:Section {name:'KIDS'}) 
+return s.sales_staff
+
+c. List the standard sizes available for shirts in male section.
+match(s:Section{name:'MALE'})-[c:contains]->(a:Apparels{name:'Shirt'}) 
+return c.size
+
+d. List the brand having least number of apparels under it.
+match(a:Apparels)-[:provided_by]->(b:Brand)
+return b.name,count(*) 
+order by count(*) limit 1
+
+
+Question 2||Hotel database
+
+Model the following Hotels information as a graph model, and answer the following queries using Cypher.
+Consider hotels in Pune. Some hotels provide lodging facility whereas some provide only restaurant facility and some provide both. 
+A person can rate(1-5 stars) a hotel for its facility/facilities. 
+A person can recommend a hotel to his/her friends. 
+A person can provide a review for a hotel after his stay/visit.
+
+1.	Identify the labels and relationships, along with their properties, and draw Graph model.
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model. 
+3.	Answer the Queries.
+a.	List the names of hotels in Camp area. 
+b.	List the names of hotels having both lodging and restaurant facility. 
+c.	List the names of hotels with high rating (>=4).
+d.	List the most recommended hotels in Koregaon Park area. 
+
+
+create(surbhi:Hotel{name:'Surbhi Hotel',area:'Pune'}) 
+create(darpan:Hotel{name:'Darpan Hotel',area:'Koregaon Park'}) 
+create(geeta:Hotel{name:'Geeta Hotel',area:'Pimpri'}) 
+create(royal:Hotel{name:'Royal Hotel',area:'Koregaon Park'}) 
+create(yash:Hotel{name:'Yash Palace Hotel',area:'Camp'}) 
+create(rajesh:Hotel{name:'Rajesh Hotel',area:'Camp'})
+
+create(lodging:Facility{f_type:'Lodging'}) 
+create(restaurant:Facility{f_type:'Restaurant'})
+
+create(surbhi)-[:provide_facility]->(lodging) 
+create(surbhi)-[:provide_facility]->(restaurant) 
+create(darpan)-[:provide_facility]->(lodging) 
+create(geeta)-[:provide_facility]->(restaurant) 
+create(royal)-[:provide_facility]->(lodging) 
+create(royal)-[:provide_facility]->(restaurant) 
+create(yash)-[:provide_facility]->(lodging) 
+create(rajesh)-[:provide_facility]->(restaurant)
+
+create(ram:Person{name:'Ram'}) 
+create(sham:Person{name:'Sham'}) 
+create(raj:Person{name:'Raj'}) 
+create(ravi:Person{name:'Ravi'})
+
+create(ram)-[:recommend {rating:5}]->(royal) 
+create(sham)-[:recommend {rating:3}]->(darpan) 
+create(raj)-[:recommend {rating:4}]->(royal) 
+create(ravi)-[:recommend {rating:4}]->(surbhi)
+
+create(ram)-[:reviews {review:'good restaurant'}]->(royal) 
+create(sham)-[:reviews {review:'best option for lodging in koregaon'}]->(darpan) 
+
+Solution for the queries
+
+a. List the names of hotels in Camp area.
+match(h:Hotel{area:'Camp'}) 
+return h.name
+
+b. List the names of hotels having both lodging and restaurant facility.
+match(h1:Hotel)-[:provide_facility]->(f1:Facility{f_type:'Lodging'}),(h2:Hotel)-[:provide_facility]->(f2:Facility{f_type:'Restaurant'})
+where h1.name=h2.name 
+return h1.name
+
+c. List the names of hotels with high rating (>=4).
+match(p:Person)-[r:recommend]->(h:Hotel) 
+where r.rating>=4 
+return distinct h.name
+
+d. List the most recommended hotels in Koregaon Park area. 
+match(p:Person)-[r:recommend]->(h:Hotel{area:'Koregaon Park'}) 
+return h.name,count(*) 
+order by count(*) desc limit 1

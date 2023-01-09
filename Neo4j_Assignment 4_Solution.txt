@@ -1,0 +1,161 @@
+Neo4j Assignment 4:
+
+Question 1||Hospital database
+
+Model the following Hospitals information as a graph model, and answer the following queries using Cypher.
+Consider hospitals in and around Pune. Each hospital may have one or more specializations like Pediatric, Gynaec, Orthopedic, etc. 
+A person can recommend/provide review for a hospital. A doctor can be associated with one or more hospitals.
+1.	Identify the labels and relationships, along with their properties, and draw Graph model. 
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model.
+3.	Answer the Queries
+a.	List the names of hospitals with pediatric specialization. 
+b.	List the Names of doctors who are visiting “Jehangir Hospital” on Mondays.
+c.	List	the	most	recommended	Hospital	for	Gynaec specialization.
+d.	List the names of people who have given a rating of (>=3) for “Jehangir Hospital”
+
+
+create(jehangir:Hospital{name:'Jehangir Hospital',specializations:['Pediatric', 'Gynaec', 'Orthopedic']})
+create(patil:Hospital{name:'Patil hospital',specializations:['Pediatric', 'Gynaec']}) 
+create(sanjivani:Hospital{name:'Sanjivani hospital',specializations:['Pediatric', 'Orthopedic']}) 
+create(astha:Hospital{name:'Astha hospital',specializations:['Gynaec', 'Orthopedic']}) 
+create(poona:Hospital{name:'Poona hospital',specializations:['Orthopedic']}) 
+create(rustam:Hospital{name:'Rustam hospital',specializations:['Gynaec']}) 
+create(saideep:Hospital{name:'Saideep hospital',specializations:['Pediatric', 'Gynaec', 'Orthopedic']})
+
+create(drrustam:Doctor{name:'Dr. Rustam'}) 
+create(drasthana:Doctor{name:'Dr. Asthana'}) 
+create(drkale:Doctor{name:'Dr. Kale'}) 
+create(drpawar:Doctor{name:'Dr. Pawar'}) 
+create(drram:Doctor{name:'Dr. Ram'}) 
+
+create(drrustam)-[:visit {Day:'Monday'}]->(jehangir) 
+create(drasthana)-[:visit {Day:'Tuesday'}]->(patil) 
+create(drkale)-[:visit {Day:'Wednesday'}]->(sanjivani) 
+create(drpawar)-[:visit {Day:'Thursday'}]->(astha) 
+create(drram)-[:visit {Day:'Friday'}]->(poona)
+create(drram)-[:visit {Day:'Monday'}]->(rustam)
+create(drkale)-[:visit {Day:'Tuesday'}]->(jehangir)
+
+ 
+create(ram:People{name:'Ram'}) 
+create(sham:People{name:'Sham'}) 
+create(raj:People{name:'Raj'}) 
+create(ravi:People{name:'Ravi'})
+
+
+create(ram)-[:recommend {specialization:'Pediatric',rating:4}]->(saideep) 
+create(ram)-[:recommend {specialization:'Orthopedic',rating:2}]->(poona) 
+create(raj)-[:recommend {specialization:'Gynaec',rating:5}]->(jehangir) 
+create(ravi)-[:recommend {specialization:'Gynaec',rating:5}]->(jehangir) 
+create(sham)-[:recommend {specialization:'Pediatric',rating:4}]->(jehangir) 
+create(sham)-[:recommend {specialization:'Gynaec',rating:5}]->(patil)
+
+
+Solution for the Queries
+
+a. List the names of hospitals with pediatric specialization.
+match (h:Hospital)
+where 'Pediatric' IN h.specializations 
+return h.name
+
+b. List the Names of doctors who are visiting “Jehangir Hospital” on Mondays. 
+match(d:Doctor)-[v:visit]->(h:Hospital)
+where v.Day='Monday' and h.name='Jehangir Hospital'
+return d.name
+
+c. List the most recommended Hospital for Gynaec specialization.
+match(p:People)-[r:recommend]->(h:Hospital)
+where r.specialization='Gynaec' 
+return h.name,count(*) 
+order by count(*) desc limit 1
+
+d. List the names of people who have given a rating of (>=3) for “Jehangir Hospital”
+match(p:People)-[r:recommend]->(h:Hospital)
+where r.rating>=3 and h.name='Jehangir Hospital'
+return p.name
+
+
+Question 2||Doctor Database
+
+Model the following Doctor’s information system as a graph model, and answer the following queries using Cypher.
+Consider the doctors in and around Pune. Each Doctor is specialized in some stream like Pediatric, Gynaec, Heart Specialist, Cancer Specialist, ENT, etc. 
+A doctor may be a visiting doctor across many hospitals or he may own a clinic. 
+A person can provide a review/can recommend a doctor.
+
+1.	Identify the labels and relationships, along with their properties, and draw a Graph model.
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model. 
+3.	Answer the Queries
+a.	List the Pediatric doctors in Camp Area. 
+b.	List the doctors who own a clinic. 
+c.	List the most recommended Gynaec in Kothrud. 
+d.      List all the reviews for “Dr. Kulkarni”. 
+
+
+create(jehangir:Hospital{name:'Jehangir Hospital'}) 
+create(patil:Hospital{name:'Patil Hospital'}) 
+create(sanjivani:Hospital{name:'Sanjivani Hospital'}) 
+create(astha:Hospital{name:'Astha Hospital'}) 
+create(poona:Hospital{name:'Poona Hospital'}) 
+create(kothrud:Hospital{name:'Kothrud Hospital'}) 
+create(saideep:Hospital{name:'Saideep Hospital'})
+
+create(dclinic:Clinic{name:'Disha Clinic'})
+create(nclinic:Clinic{name:'Niramay Clinic'})
+
+create(drrustam:Doctor{name:'Dr. Rustam',specializations:'Pediatric',work_area:'Camp'}) 
+create(drasthana:Doctor{name:'Dr. Asthana',specializations:'Gynaec',work_area:'Kothrud'})
+create(drkale:Doctor{name:'Dr. Kale',specializations:'Orthopaedic',work_area:'Pimpri'}) 
+create(drrusy:Doctor{name:'Dr. Rusy',specializations:'Gynaec',work_area:'Kothrud'}) 
+create(drram:Doctor{name:'Dr. Ram',specializations:'Pediatric',work_area:'Camp'}) 
+create(drkulkarni:Doctor{name:'Dr. Kulkarni',specializations:'Pediatric',work_area:'Kothrud'})
+
+create(drrustam)-[:visit]->(jehangir) 
+create(drasthana)-[:visit]->(patil) 
+create(drkale)-[:visit]->(sanjivani) 
+create(drrusy)-[:visit]->(astha) 
+create(drram)-[:visit]->(poona) 
+
+create(drkale)-[:owns]->(nclinic)
+create(drkulkarni)-[:owns]->(dclinic)
+
+create(ram:people{name:'Ram'}) 
+create(sham:people{name:'Sham'}) 
+create(raj:people{name:'Raj'}) 
+create(ravi:people{name:'Ravi'})
+
+
+create(ram)-[:recommend]->(drrusy) 
+create(sham)-[:recommend]->(drrusy) 
+create(raj)-[:recommend]->(drasthana) 
+create(ravi)-[:recommend]->(drkulkarni)
+create(sham)-[:recommend]->(drkale) 
+
+create(ram)-[:reviews {review:'very friendly and helpful'}]->(drrustam) 
+create(sham)-[:reviews {review:'excellent treatment'}]->(drram) 
+create(raj)-[:reviews {review:'excellent service'}]->(drkulkarni) 
+create(ravi)-[:reviews {review:'helpful and kind'}]->(drkulkarni)
+create(ravi)-[:reviews {review:'very understanding'}]->(drkale)
+
+Solution for the Queries
+
+a. List the Pediatric doctors in Camp Area.
+match(d:Doctor{work_area:'Camp', specializations:'Pediatric'}) 
+return d.name
+
+b. List the doctors who own a clinic.
+match(d:Doctor)-[:owns]->(c:Clinic)
+return d.name
+
+c. List the most recommended Gynaec in Kothrud
+match(p:people)-[:recommend]->(d:Doctor) 
+where d.specializations='Gynaec' and d.work_area='Kothrud'
+return d.name,count(*) 
+order by count(*) desc limit 1
+
+d. List all the reviews for “Dr. Kulkarni”.
+match(p:people)-[r:reviews]->(d:Doctor{name:'Dr. Kulkarni'}) 
+return r.review
+ 
+
+
+

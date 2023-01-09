@@ -1,0 +1,149 @@
+Neo4j Assignment 5:
+
+Question 1||Automobile database
+
+Model the following Automobile information system as a graph model, and answer the following queries using Cypher.
+Consider an Automobile industry manufacturing different types of vehicles like Heavy Vehicles, Light Vehicles, etc. A customer can buy one or more types of vehicle. A person can recommend or rate a vehicle type.
+1.	Identify the labels and relationships, along with their properties, and draw Graph model. 
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model.
+3.	Answer the Queries
+	a.	List the characteristics of heavy vehicle types. 
+	b.	List the name of customers who bought a light vehicle. 
+	c.	List the customers who bought more than one type of vehicle. 
+	d.	List the most recommended vehicle type.
+
+
+
+CREATE(heavy:vehicle {type:'Heavy Vehicle',characteristics:['weighted vehicle','more than four tyres','high cc']})
+CREATE(light:vehicle {type:'Light Vehicle',characteristics:['light weight vehicle','four tyres vehicle','low cc']})
+
+
+CREATE(soyab:Customer {Name:'BEIG SOYAB'})
+CREATE(ajaz:Customer {Name:'BEIG AJAZ'})
+CREATE(salman:Customer {Name:'KHAN SALMAN'})
+CREATE(ram:Customer {Name:'JADHAV RAM'})
+CREATE(amit:Customer {Name:'SHAH AMIT'})
+
+
+CREATE(soyab)-[:Recommends]->(light)
+CREATE(ajaz)-[:Recommends]->(heavy)
+CREATE(salman)-[:Recommends]->(light)
+CREATE(ram)-[:Recommends]->(heavy)
+CREATE(amit)-[:Recommends]->(light)
+
+
+CREATE(soyab)-[:Bought]->(light)
+CREATE(ajaz)-[:Bought]->(heavy)
+CREATE(salman)-[:Bought]->(light)
+CREATE(ram)-[:Bought]->(heavy)
+CREATE(amit)-[:Bought]->(light)
+CREATE(soyab)-[:Bought]->(heavy)
+CREATE(ajaz)-[:Bought]->(light)
+CREATE(salman)-[:Bought]->(heavy)
+
+Solution for the queries
+
+a.List the characteristics of heavy vehicle types.
+match(v1:vehicle{type:"Heavy Vehicle"})
+return v1.characteristics
+
+
+b.List the name of customers who bought a light vehicle. 
+match(c1:Customer)-[:Bought]->(v1:vehicle{type:"Light Vehicle" })
+return c1.Name
+
+c.List the customers who bought more than one type of vehicle.
+match(c1:Customer)-[:Bought]->(v1:vehicle{type:"Light Vehicle" }),(c2:Customer)-[:Bought]->(v2:vehicle{type:"Heavy Vehicle" })
+where c1.Name=c2.Name 
+return c1.Name
+
+
+d.List the most recommended vehicle type.
+match(c1:Customer)-[:Recommends]->(v1:vehicle) return v1.type,count(*)
+order by count(*)desc
+limit 1
+
+
+
+Assignment 5:
+
+Question 2||University database
+
+Model the following University information system as a graph model, and answer the following queries using Cypher.
+University has various departments like Mathematics, Geology, Chemistry, etc. Each department conducts various courses and a course may be conducted by multiple departments. Every course may have recommendations provided by people.
+1.	Identify the labels and relationships, along with their properties, and draw Graph model.
+2.	Create nodes and relationships, along with their properties, and visualize your actual Graph model.
+3.	Answer the Queries
+	a.	List the names of the courses provided by Chemistry Department. 
+	b.	List the details of all the departments in the university.
+	c.	List the names of common courses across chemistry and zoology department. 
+	d.	List the most recommended course in Computer Science Department. 
+
+
+CREATE(math:Department {Dept:'MATHEMATICS',section:'GRAND'})
+CREATE(sci:Department {Dept:'COMPUTER SCIENCE',section:'NON GRAND'})
+CREATE(geo:Department {Dept:'GEOLOGY',section:'GRAND'})
+CREATE(che:Department {Dept:'CHEMISTRY',section:'NON GRAND'})
+CREATE(zoo:Department {Dept:'ZOOLOGY',section:'GRAND'})
+
+
+CREATE(soyab:People {Name:'BEIG SOYAB'})
+CREATE(ajaz:People {Name:'BEIG AJAZ'})
+CREATE(salman:People {Name:'KHAN SALMAN'})
+CREATE(ram:People{Name:'JADHAV RAM'})
+CREATE(amit:People {Name:'SHAH AMIT'})
+
+
+CREATE(bcs:course{Name:'BCS'})
+CREATE(bca:course{Name:'BCA'})
+CREATE(mca:course{Name:'MCA'})
+CREATE(mcs:course{Name:'MCS'})
+CREATE(bsc:course{Name:'BSC'})
+CREATE(msc:course{Name:'MSC'})
+
+
+CREATE (bsc)-[:Provided_by]->(math)
+CREATE (bcs)-[:Provided_by]->(sci)
+CREATE (bca)-[:Provided_by]->(sci)
+CREATE (mca)-[:Provided_by]->(sci)
+CREATE (mcs)-[:Provided_by]->(sci)
+CREATE (bsc)-[:Provided_by]->(che)
+CREATE (bsc)-[:Provided_by]->(zoo)
+CREATE (msc)-[:Provided_by]->(geo)
+CREATE (msc)-[:Provided_by]->(che)
+
+
+CREATE(soyab)-[:Recommends]->(bsc)
+CREATE(ajaz)-[:Recommends]->(bcs)
+CREATE(ram)-[:Recommends]->(bcs)
+CREATE(salman)-[:Recommends]->(bca)
+CREATE(amit)-[:Recommends]->(msc)
+
+
+a.List the names of the courses provided by Chemistry Department. 
+match(c:course)-[:Provided_by]->(d:Department{Dept:'CHEMISTRY'})
+return c.Name
+
+b.List the details of all the departments in the university.
+match(c:course)-[:Provided_by]->(d:Department)
+return distinct d.Dept,d.section
+
+or 
+
+match(d:Department)
+return d.Dept,d.section
+
+c.List the names of common courses across chemistry and zoology department.
+match(c1:course)-[:Provided_by]->(d1:Department{Dept:'CHEMISTRY'}),
+(c2:course)-[:Provided_by]->(d2:Department{Dept:'ZOOLOGY'})
+where c1.Name=c2.Name 
+return c1.Name
+
+d.List the most recommended course in Computer Science Department. 
+match (p:People)-[:Recommends]->(c:course),(c:course)-[:Provided_by]->(d:Department{Dept:'COMPUTER SCIENCE'})
+return distinct c.Name,count(*)
+order by count(*) desc
+limit 1
+
+
+
